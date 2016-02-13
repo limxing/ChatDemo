@@ -11,6 +11,11 @@ import com.alibaba.mobileim.channel.event.IWxCallback;
 
 import com.limxing.chatdemo.application.ChatApplication;
 import com.limxing.library.utils.LogUtils;
+import com.limxing.library.utils.StringUtils;
+
+import cn.finalteam.okhttpfinal.dm.DownloadInfo;
+import cn.finalteam.okhttpfinal.dm.DownloadListener;
+import cn.finalteam.okhttpfinal.dm.DownloadManager;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -45,5 +50,38 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+    }
+    public void down(String url){
+        if (!DownloadManager.getInstance(this).hasTask(url)) {
+            DownloadManager.getInstance(this).addTask(url, null);
+        }
+        DownloadManager.getInstance(this).addTaskListener(url, new DownloadListener() {
+            @Override
+            public void onProgress(DownloadInfo downloadInfo) {
+                super.onProgress(downloadInfo);
+                holder.mTvOperate.setText("暂停");
+                holder.mTvDownloadState.setText("下载中");
+                holder.mNumberProgressBar.setProgress(downloadInfo.getProgress());
+                String downladScale = StringUtils.formatFileSize(downloadInfo.getDownloadLength()) + "/"
+                        + StringUtils.formatFileSize(downloadInfo.getTotalLength());
+                holder.mTvDownloadScale.setText(downladScale);
+                holder.mTvDownloadSpeed.setText(StringUtils.formatFileSize(downloadInfo.getNetworkSpeed()));
+            }
+
+            @Override
+            public void onError(DownloadInfo downloadInfo) {
+                super.onError(downloadInfo);
+                holder.mTvOperate.setText("继续");
+                holder.mTvDownloadState.setText("已暂停");
+            }
+
+            @Override
+            public void onFinish(DownloadInfo downloadInfo) {
+                super.onFinish(downloadInfo);
+                holder.mTvDownloadState.setText("下载完成");
+                holder.mTvOperate.setText("安装");
+            }
+        });
+//        DownloadManager.getInstance(this).setGlobalDownloadListener(new DownloadListener());
     }
 }
